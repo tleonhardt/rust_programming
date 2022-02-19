@@ -1,7 +1,13 @@
 fn main() {
-    let mut s = String::from("hello");
+    let s1 = String::from("hello");
 
-    s.push_str(", world!"); // push_str() appends a literal to a String
+    let (s2, len) = calculate_length(s1);
 
-    println!("{}", s); // This will print `hello, world!`
+    println!("The length of '{}' is {}.", s2, len);
+}
+
+fn calculate_length(s: String) -> (String, usize) {
+    let length = s.len(); // len() returns the length of a String
+
+    (s, length)
 }
