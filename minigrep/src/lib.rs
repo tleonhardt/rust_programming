@@ -1,38 +1,38 @@
 #![warn(clippy::all, clippy::pedantic)]
-use std::env;
+use clap::Parser;
 use std::error::Error;
 use std::fs;
 
+type MyResult<T> = Result<T, Box<dyn Error>>;
+
+/// Miniature version of grep
+#[derive(Parser, Debug)]
+#[clap(about, version, author = "Todd Leonhardt")]
 pub struct Config {
+    /// Pattern to search for
+    #[clap()]
     pub query: String,
+
+    /// Input file
+    #[clap()]
     pub filename: String,
-    pub case_sensitive: bool,
+
+    /// Perform case insensitive matching.  By default, minigrep is case sensitive.
+    #[clap(short = 'i', long = "ignore-case")]
+    pub ignore_case: bool,
 }
 
-impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
-        let query = args[1].clone();
-        let filename = args[2].clone();
-        let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
-
-        Ok(Config {
-            query,
-            filename,
-            case_sensitive,
-        })
-    }
+pub fn get_args() -> MyResult<Config> {
+    Ok(Config::parse())
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.filename)?;
 
-    let results = if config.case_sensitive {
-        search(&config.query, &contents)
-    } else {
+    let results = if config.ignore_case {
         search_case_insensitive(&config.query, &contents)
+    } else {
+        search(&config.query, &contents)
     };
 
     for line in results {
